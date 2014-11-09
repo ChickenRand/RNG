@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     //Cumulate 20000 bits for test
     unsigned char numbers_to_test[MAX_NUMBER_PER_READ*NUM_SAMPLE_TO_TEST];
     size_t len = 0;
-    if(argc > 2 && strcmp(argv[1], "-d") == 0)
+    if(argc > 1 && strcmp(argv[1], "-d") == 0)
         daemonize();
 
     // server url will be http://localhost:8080

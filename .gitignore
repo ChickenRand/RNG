@@ -1,1 +1,3 @@
 *.o
+rng
+rng_server

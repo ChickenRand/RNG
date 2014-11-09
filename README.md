@@ -12,9 +12,11 @@ Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
     mkdir build
     cd build
     cmake ..
+    #Or that on the raspberry pi
+    cmake .. -DLWS_IPV6=OFF
     make
     sudo make install
-    sudo ln -s /usr/local/lib/libwebsockets.so.4.0.0 /usr/lib/libwebsockets.so.4.0.0
+    sudo ln -s /usr/local/lib/libwebsockets.so.5.0.0 /usr/lib/libwebsockets.so.5.0.0
 
 ## Building the websockets server and the rng
 
