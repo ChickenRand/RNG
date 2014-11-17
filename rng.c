@@ -127,11 +127,14 @@ int main(int argc, char *argv[])
     uint32_t nb_bytes_samples = nb_bits_samples / 8;
     uint32_t nb_bytes = 0;
     uint8_t samples[nb_bytes_samples];
+    uint8_t test = 0;
 
     signal(SIGINT, signal_handler);
 
     if(argc > 1 && strcmp(argv[1], "-d") == 0)
         daemonize();
+    if(argc > 1 && strcmp(argv[1], "-t") == 0)
+        test = 1;
 
     create_fifo_and_wait("w", "Waiting for server to start...", "Server started : could start Random numbers generation.");
 
@@ -141,7 +144,16 @@ int main(int argc, char *argv[])
         for (i = 0; i < nb_bits_samples; i++) 
         {
             bit = qrand();
-            nb_bytes = exclusive_or(bit, (uint8_t*)&samples);
+            //When we want to test the rng, we don't want it to be unbiaise
+            if(test == 1)
+            {
+                nb_bytes = build_byte(bit, (uint8_t*)&samples);
+            }
+            else
+            {
+                nb_bytes = exclusive_or(bit, (uint8_t*)&samples);
+            }
+
             if(nb_bytes >= nb_bytes_samples)
             {
                 send_numbers((uint8_t*)&samples, nb_bytes_samples);
