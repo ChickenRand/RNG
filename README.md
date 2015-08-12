@@ -7,6 +7,7 @@ Some usefull information on how to compile and configure a project for libwebsoc
 
 Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
 
+    sudo apt-get install cmake libssl-dev
     git clone git://github.com/warmcat/libwebsockets.git
     cd libwebsockets
     mkdir build
@@ -20,8 +21,8 @@ Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
 
 ## Building the websockets server and the rng
 
-Then cd to the 'c' directory and specify libwebsocket location for compilation :
-
+    git clone git://github.com/ChickenRand/RNG
+    cd RNG
     make
 
 # Launch everything
