@@ -1,0 +1,26 @@
+{
+  "name": "chickenrand-rng",
+  "version": "1.0.0",
+  "description": "A websocket server that serve random bits",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChickenRand/RNG.git"
+  },
+  "keywords": [
+    "websockets",
+    "rng"
+  ],
+  "author": "Andréas Livet",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ChickenRand/RNG/issues"
+  },
+  "homepage": "https://github.com/ChickenRand/RNG#readme",
+  "dependencies": {
+    "ws": "^2.1.0"
+  }
+}

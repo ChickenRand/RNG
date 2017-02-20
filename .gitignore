@@ -1,3 +1,4 @@
 *.o
 rng
 rng_server
+node_modules/
