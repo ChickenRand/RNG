@@ -4,7 +4,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
-const ONERNG_BITRATE = 58000; // In byte per second
+const ONERNG_BITRATE = 40950; // In byte per second
 
 console.log('Server started at localhost:8080');
 
