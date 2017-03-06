@@ -9,6 +9,7 @@ const ONERNG_BITRATE = 40950; // In byte per second
 console.log('Server started at localhost:8080');
 
 let rngFd = 0;
+let wsConnection = null;
 
 // On start up, try to read from oneRng device
 fs.open('/dev/ttyACM0', 'r', function(status, fd) {
@@ -24,31 +25,32 @@ fs.open('/dev/ttyACM0', 'r', function(status, fd) {
 	rngFd = fd;
 });
 
-wss.on('connection', function connection(ws) {
-	function randomIntInc (low, high) {
-		return Math.floor(Math.random() * (high - low + 1) + low);
-	}
-
-	// TODO : refuse more than one connection
-	console.log('Client connection start sending numbers');
-	function sendBytes () {
-		const bytesToRead = ONERNG_BITRATE / 10;
-		const buffer = new Buffer(bytesToRead);
-		fs.read(rngFd, buffer, 0, bytesToRead, null, function(err, num, buff) {
-			if(err) {
-				console.error(err, typeof err, num);
-			}
-			ws.send(buff, function (err) {
+function readAndSendBytes () {
+	const bytesToRead = ONERNG_BITRATE / 10;
+	const buffer = new Buffer(bytesToRead);
+	fs.read(rngFd, buffer, 0, bytesToRead, null, function(err, num, buff) {
+		if(err) {
+			console.error(err, typeof err, num);
+		}
+		if(wsConnection != null) {
+			wsConnection.send(buff, function (err) {
 				if(err) {
 					console.error('Error', err);
 				}
 			});
-		});
-	}
-	const id = setInterval(sendBytes, 100);
+		}
+	});
+}
+const id = setInterval(readAndSendBytes, 100);
+
+wss.on('connection', function connection(ws) {
+	// TODO : refuse more than one connection
+	console.log('Client connection start sending numbers');
+	wsConnection = ws;
 
 	ws.on('close', function () {
 		console.log('Connection closed. Stopping client interval');
 		clearInterval(id);
+		wsConnection = null;
 	});
 });
