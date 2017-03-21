@@ -1,9 +1,10 @@
-"use strict";
+#!/usr/bin/env node
+'use strict';
 
 const fs = require('fs');
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({port: 8080});
 const ONERNG_CHUNK = 4095; // In byte
 const ONERNG_PATH = '/dev/ttyACM0';
 
@@ -18,7 +19,6 @@ let wsConnection = null;
 function readExact(fd, length) {
 	return new Promise((resolve, reject) => {
 		let finalBuffer = new Buffer(0);
-		let totalBytesReaded = 0;
 		let bytesToRead = length;
 
 		readRecursive();
@@ -32,11 +32,9 @@ function readExact(fd, length) {
 
 				finalBuffer = Buffer.concat([finalBuffer, buffer.slice(0, bytesReaded)], finalBuffer.length + bytesReaded);
 				if (bytesReaded === bytesToRead) {
-					// finalBuffer.forEach((n) => console.log(n));
 					resolve(finalBuffer);
 				} else {
-					totalBytesReaded = totalBytesReaded + bytesReaded;
-					bytesToRead = bytesToRead - bytesReaded;
+					bytesToRead -= bytesReaded;
 					readRecursive();
 				}
 			});
@@ -44,15 +42,14 @@ function readExact(fd, length) {
 	});
 }
 
-function readAndSendBytes () {
+function readAndSendBytes() {
 	const bytesToRead = ONERNG_CHUNK;
-	const buffer = new Buffer(bytesToRead);
 
 	try {
-		readExact(rngFd, bytesToRead).then((buffer) => {
-			if(wsConnection != null) {
+		readExact(rngFd, bytesToRead).then(buffer => {
+			if (wsConnection !== null) {
 				wsConnection.send(buffer, function (err) {
-					if(err) {
+					if (err) {
 						console.error('Error', err);
 					}
 				});
@@ -65,12 +62,12 @@ function readAndSendBytes () {
 }
 
 // On start up, try to read from oneRng device
-fs.open(ONERNG_PATH, 'r', function(status, fd) {
+fs.open(ONERNG_PATH, 'r', function (status, fd) {
 	if (status) {
 		console.error(status.message);
-		if(status.code === 'EACCES') {
+		if (status.code === 'EACCES') {
 			console.error('You should be root to access OneRNG stream.');
-			process.exit(1);
+			throw new Error('You should be root to access OneRNG stream.');
 		}
 		return;
 	}
