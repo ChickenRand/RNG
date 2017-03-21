@@ -14,6 +14,9 @@
     "websockets",
     "rng"
   ],
+  "bin": {
+    "rng": "./index.js"
+  },
   "author": "Andréas Livet",
   "license": "GPL-3.0",
   "bugs": {
