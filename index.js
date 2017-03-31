@@ -4,14 +4,19 @@
 const fs = require('fs');
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({port: 8080});
 const ONERNG_CHUNK = 4095; // In byte
 const ONERNG_PATH = '/dev/ttyACM0';
 
-console.log('Server started at localhost:8080');
-
 let rngFd = 0;
 let wsConnection = null;
+
+const wss = new WebSocket.Server({
+	port: 8080,
+	// Allow only one connection at a time
+	verifyClient: () => wsConnection === null
+});
+
+console.log('Server started at localhost:8080');
 
 /*
 * Read OneRNG until it get the exact amount of bytes
@@ -77,7 +82,6 @@ fs.open(ONERNG_PATH, 'r', function (status, fd) {
 });
 
 wss.on('connection', function connection(ws) {
-	// TODO : refuse more than one connection
 	console.log('Client connection start sending numbers');
 	wsConnection = ws;
 
