@@ -52,7 +52,7 @@ function readAndSendBytes() {
 
 	try {
 		readUntilLengthReach(rngFd, bytesToRead).then(buffer => {
-			if (wsConnection !== null) {
+			if (wsConnection !== null && wsConnection.readyState === WebSocket.OPEN) {
 				wsConnection.send(buffer, function (err) {
 					if (err) {
 						console.error('Error', err);
