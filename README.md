@@ -1,6 +1,34 @@
 
 # Installation
 
+## With a OneRNG on a raspberry pi with Raspbian
+Install rasbian.
+
+    First, put a ssh file in the /boot directory to activate ssh in headless mode
+
+Then :
+
+    ssh pi@your-raspberry-pi-ip
+    sudo apt-get install git rng-tools python-gnupg at
+    git clone https://github.com/ChickenRand/RNG.git
+
+Get the lastest node 6.X dist for ARM v6 https://nodejs.org/dist/ like stated here http://raspberrypi.stackexchange.com/a/37976 and here http://raspberrypi.stackexchange.com/a/48313
+    cd /tmp
+    tar -xzf node-v6.11.0-linux-armv6l.tar.gz
+    cd node-v6.11.0-linux-armv6l/
+    sudo cp -R * /usr/local/
+    sudo ln -s /usr/local/bin/node /usr/bin/node
+    sudo ln -s /usr/local/bin/npm /usr/bin/npm
+
+Get the lastest rngd version
+    sudo dpkg -i /tmp/onerng_3.5-1_all.deb
+    sudo nano /etc/onerng.conf
+    ONERNG_MODE_COMMAND="cmd1" instead of ONERNG_MODE_COMMAND="cmd0"
+    cd
+    cd RNG/
+    npm install
+
+
 ## Building libwebsockets
 
 Some usefull information on how to compile and configure a project for libwebsockets can be found [here](http://martinsikora.com/libwebsockets-compiling-libraries-and-projects)
@@ -66,15 +94,15 @@ Start by installing ddclient via apt-get :
 
     sudo apt-get install ddclient
 
-To the dynDNS provider question, respond : 
-    
+To the dynDNS provider question, respond :
+
     other
 
 For server adress put (it's not really important):
-    
+
     freedns.afraid.org
 
-Then for the protocol, respond (we will change it later) : 
+Then for the protocol, respond (we will change it later) :
 
     dyndns
 

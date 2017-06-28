@@ -21,7 +21,7 @@ console.log('Server started at localhost:8080');
 /*
 * Read OneRNG until it get the exact amount of bytes
 */
-function readExact(fd, length) {
+function readUntilLengthReach(fd, length) {
 	return new Promise((resolve, reject) => {
 		let finalBuffer = new Buffer(0);
 		let bytesToRead = length;
@@ -51,7 +51,7 @@ function readAndSendBytes() {
 	const bytesToRead = ONERNG_CHUNK;
 
 	try {
-		readExact(rngFd, bytesToRead).then(buffer => {
+		readUntilLengthReach(rngFd, bytesToRead).then(buffer => {
 			if (wsConnection !== null) {
 				wsConnection.send(buffer, function (err) {
 					if (err) {
