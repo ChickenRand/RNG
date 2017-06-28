@@ -28,6 +28,13 @@ Get the lastest rngd version
     cd RNG/
     npm install
 
+Setup the systemd service
+    sudo npm install -g
+    sudo cp rng.service /etc/systemd/system/rng.service
+    sudo systemctl enable rng
+    sudo systemctl start rng
+    sudo systemctl status rng -l
+
 
 ## Building libwebsockets
 
