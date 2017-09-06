@@ -4,7 +4,7 @@
 ## With a OneRNG on a raspberry pi with Raspbian
 Install rasbian.
 
-    First, put a ssh file in the /boot directory to activate ssh in headless mode
+    First, put a ssh file in the boot partition to activate ssh in headless mode
 
 Then :
 
@@ -14,8 +14,8 @@ Then :
 
 Get the lastest node 6.X dist for ARM v6 https://nodejs.org/dist/ like stated here http://raspberrypi.stackexchange.com/a/37976 and here http://raspberrypi.stackexchange.com/a/48313
     cd /tmp
-    tar -xzf node-v6.11.0-linux-armv6l.tar.gz
-    cd node-v6.11.0-linux-armv6l/
+    tar -xzf node-v6.11.3-linux-armv6l.tar.gz
+    cd node-v6.11.3-linux-armv6l/
     sudo cp -R * /usr/local/
     sudo ln -s /usr/local/bin/node /usr/bin/node
     sudo ln -s /usr/local/bin/npm /usr/bin/npm
@@ -24,11 +24,9 @@ Get the lastest rngd version
     sudo dpkg -i /tmp/onerng_3.5-1_all.deb
     sudo nano /etc/onerng.conf
     ONERNG_MODE_COMMAND="cmd1" instead of ONERNG_MODE_COMMAND="cmd0"
-    cd
-    cd RNG/
-    npm install
 
 Setup the systemd service
+    cd RNG/
     sudo npm install -g
     sudo cp rng.service /etc/systemd/system/rng.service
     sudo systemctl enable rng
