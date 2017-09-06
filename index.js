@@ -23,19 +23,19 @@ console.log('Server started at localhost:8080');
 */
 function readUntilLengthReach(fd, length) {
 	return new Promise((resolve, reject) => {
-		let finalBuffer = new Buffer(0);
+		const finalBuffer = new Buffer(length);
+		let offset = 0;
 		let bytesToRead = length;
 
 		readRecursive();
 
 		function readRecursive() {
-			const tempBuffer = new Buffer(bytesToRead);
-			fs.read(fd, tempBuffer, 0, bytesToRead, null, function (err, bytesReaded, buffer) {
+			fs.read(fd, finalBuffer, offset, bytesToRead, null, function (err, bytesReaded, buffer) {
 				if (err) {
 					reject(err);
 				}
 
-				finalBuffer = Buffer.concat([finalBuffer, buffer.slice(0, bytesReaded)], finalBuffer.length + bytesReaded);
+				offset = offset + bytesReaded;
 				if (bytesReaded === bytesToRead) {
 					resolve(finalBuffer);
 				} else {
