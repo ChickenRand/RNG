@@ -4,7 +4,7 @@
 const fs = require('fs');
 const WebSocket = require('ws');
 
-const ONERNG_CHUNK = 4095; // In byte
+const ONERNG_CHUNK = 4000; // In byte, so 32000 bits per trials
 const ONERNG_PATH = '/dev/ttyACM0';
 
 let rngFd = 0;
