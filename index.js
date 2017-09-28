@@ -2,12 +2,15 @@
 'use strict';
 
 const fs = require('fs');
+const http = require('http');
 const WebSocket = require('ws');
 
 const readUntilLengthReach = require('./read-until');
 
+const CHICKENRAND_URL = process.env.CHICKENRAND_URL || 'localhost';
+const CHICKENRAND_PORT = process.env.CHICKENRAND_PORT || '7000';
 const ONERNG_CHUNK = 4000; // In byte, so 32000 bits per trials
-const ONERNG_PATH = '/dev/ttyACM0';
+const ONERNG_PATH = process.env.ONERNG_PATH || '/dev/urandom'; //'/dev/ttyACM0';
 const XP_TRIALS_COUNT = 100;
 
 let rngFd = 0;
@@ -25,14 +28,15 @@ const wss = new WebSocket.Server({
 console.log('Server started at localhost:8080');
 
 // Recursively send all xp data buffer
-function sendAllXpData() {
-	const buf = xpData.shift();
+// And store them to one big buffer
+function sendAllXpData(index) {
+	const buf = xpData[index];
 	if(buf) {
 		wsConnection.send(buf, function (err) {
 			if (err) {
 				console.error('Error', err);
 			}
-			sendAllXpData();
+			sendAllXpData(index + 1);
 		});
 	}
 }
@@ -47,7 +51,7 @@ function readAndSendBytes() {
 				xpData.push(buffer);
 				if(xpData.length === XP_TRIALS_COUNT) {
 					console.log('Xp finished, start sending numbers.');
-					sendAllXpData();
+					sendAllXpData(0);
 					xpStarted = false;
 				}
 			}
@@ -73,6 +77,28 @@ fs.open(ONERNG_PATH, 'r', function (status, fd) {
 	readAndSendBytes();
 });
 
+// inspired from https://stackoverflow.com/a/45178696/947242
+function uploadRawData(dataBuffer, userXpId) {
+  return new Promise((resolve, reject) => {
+    let options = {
+      method: "POST",
+      hostname: CHICKENRAND_URL,
+      port: CHICKENRAND_PORT,
+      path: `/xp/send_raw_data/${userXpId}`,
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": dataBuffer.length
+      }
+    };
+    let data = [];
+    let request = http.request(options);
+    request.on("error", err => reject(err));
+
+    request.write(dataBuffer);
+    request.end(null, null, () => resolve());
+  });
+}
+
 wss.on('connection', function connection(ws) {
 	console.log('Client connection.');
 	wsConnection = ws;
@@ -84,6 +110,18 @@ wss.on('connection', function connection(ws) {
 			console.log('Client start XP. Start collecting numbers.')
 			xpStarted = true;
 			xpData = [];
+		} else {
+			const jsonMsg = JSON.parse(msg);
+			if(jsonMsg.userXpId && xpData.length > 0) {
+				console.log('Send raw data for userXp ', jsonMsg.userXpId, 'and close connection.');
+				// Send raw datas to chickenrand server
+				uploadRawData(Buffer.concat(xpData), jsonMsg.userXpId)
+					.then(() => ws.close())
+					.catch(err => {
+						console.error(err);
+						ws.close();
+					});
+			}
 		}
 	});
 
