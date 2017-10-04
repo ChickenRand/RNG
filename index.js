@@ -27,22 +27,25 @@ const wss = new WebSocket.Server({
 
 console.log('Server started at localhost:8080');
 
-// Recursively send all xp data buffer
-// And store them to one big buffer
-function sendAllXpData(index) {
+function sendXpData(resolve, reject, index) {
 	const buf = xpData[index];
 	if(buf) {
-		try {
-			wsConnection.send(buf, function (err) {
-				if (err) {
-					console.error('Error', err);
-				}
-				sendAllXpData(index + 1);
-			});
-		} catch (err) {
-			console.error(err, typeof err);
-		}
+		wsConnection.send(buf, function (err) {
+			if (err) {
+				reject(err);
+			}
+			sendXpData(resolve, reject, index + 1);
+		});
+	} else {
+		resolve();
 	}
+}
+
+// Recursively send all xp data buffer
+function sendAllXpData() {
+	return new Promise((resolve, reject) => {
+		sendXpData(resolve, reject, 0);
+	});
 }
 
 function readAndSendBytes() {
@@ -55,11 +58,17 @@ function readAndSendBytes() {
 				xpData.push(buffer);
 				if(xpData.length === XP_TRIALS_COUNT) {
 					console.log('Xp finished, start sending numbers.');
-					sendAllXpData(0);
 					xpStarted = false;
+					// Start reading again only after sending all the datas
+					sendAllXpData()
+						.then(() => readAndSendBytes())
+						.catch(err => console.error(err))
+				} else {
+					readAndSendBytes();
 				}
+			} else {
+				readAndSendBytes();
 			}
-			readAndSendBytes();
 		});
 	} catch (err) {
 		console.error(err, typeof err);
@@ -118,13 +127,17 @@ wss.on('connection', function connection(ws) {
 			const jsonMsg = JSON.parse(msg);
 			if(jsonMsg.userXpId && xpData.length > 0) {
 				console.log('Send raw data for userXp ', jsonMsg.userXpId, 'and close connection.');
+				// TEMP CLOSE WS CONNECTION WITHOUT SENDING DATA
+				// OUR FREE HEROKU server can't handle that
+				// DON'T HAVE TIME AND MONEY TO SET UP A DEDICATED SERVER
+				ws.close();
 				// Send raw datas to chickenrand server
-				uploadRawData(Buffer.concat(xpData), jsonMsg.userXpId)
-					.then(() => ws.close())
-					.catch(err => {
-						console.error(err);
-						ws.close();
-					});
+				// uploadRawData(Buffer.concat(xpData), jsonMsg.userXpId)
+				// 	.then(() => ws.close())
+				// 	.catch(err => {
+				// 		console.error(err);
+				// 		ws.close();
+				// 	});
 			}
 		}
 	});
