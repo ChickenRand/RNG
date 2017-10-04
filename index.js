@@ -32,12 +32,16 @@ console.log('Server started at localhost:8080');
 function sendAllXpData(index) {
 	const buf = xpData[index];
 	if(buf) {
-		wsConnection.send(buf, function (err) {
-			if (err) {
-				console.error('Error', err);
-			}
-			sendAllXpData(index + 1);
-		});
+		try {
+			wsConnection.send(buf, function (err) {
+				if (err) {
+					console.error('Error', err);
+				}
+				sendAllXpData(index + 1);
+			});
+		} catch (err) {
+			console.error(err, typeof err);
+		}
 	}
 }
 
