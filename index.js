@@ -12,6 +12,8 @@ const CHICKENRAND_PORT = process.env.CHICKENRAND_PORT || '7000';
 const ONERNG_CHUNK = 4000; // In byte, so 32000 bits per trials
 const ONERNG_PATH = process.env.ONERNG_PATH || '/dev/urandom'; //'/dev/ttyACM0';
 const XP_TRIALS_COUNT = 100;
+const APP_ENV = process.env.APP_ENV || 'dev';
+
 
 let rngFd = 0;
 let wsConnection = null;
@@ -25,7 +27,7 @@ const wss = new WebSocket.Server({
 	verifyClient: () => wsConnection === null
 });
 
-console.log('Server started at localhost:8080');
+console.log('Server started at localhost:8080 in ' + APP_ENV + ' environment ');
 
 function sendXpData(resolve, reject, index) {
 	const buf = xpData[index];
@@ -64,7 +66,11 @@ function readAndSendBytes() {
 						.then(() => readAndSendBytes())
 						.catch(err => console.error(err))
 				} else {
-					readAndSendBytes();
+					if (APP_ENV === 'dev') {
+						setTimeout(readAndSendBytes, 100) ;
+				  } else {
+						readAndSendBytes();
+					}
 				}
 			} else {
 				readAndSendBytes();
