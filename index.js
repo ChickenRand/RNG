@@ -27,7 +27,7 @@ const wss = new WebSocket.Server({
 	verifyClient: () => wsConnection === null
 });
 
-console.log('Server started at localhost:8080 in '+ APP_ENV);
+console.log('Server started at localhost:8080 in '+ APP_ENV +' environment');
 
 function sendXpData(resolve, reject, index) {
 	const buf = xpData[index];
@@ -66,11 +66,9 @@ function readAndSendBytes() {
 						.then(() => readAndSendBytes())
 						.catch(err => console.error(err))
 				} else {
-					if (APP_ENV === 'dev')
-					{
-					setTimeout(readAndSendBytes, 100) ;
-				  }
-					else {
+					if (APP_ENV === 'dev') {
+						setTimeout(readAndSendBytes, 100) ;
+				  } else {
 						readAndSendBytes();
 					}
 				}
