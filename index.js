@@ -27,7 +27,7 @@ const wss = new WebSocket.Server({
 	verifyClient: () => wsConnection === null
 });
 
-console.log('Server started at localhost:8080 in '+ APP_ENV +' environment');
+console.log('Server started at localhost:8080 in ' + APP_ENV + ' environment ');
 
 function sendXpData(resolve, reject, index) {
 	const buf = xpData[index];
