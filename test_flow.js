@@ -8,7 +8,7 @@ const readUntilLengthReach = require('./read-until');
 let rngFd = 0;
 const ONERNG_PATH = '/dev/ttyACM0';
 let startedTime = 0;
-const BYTES_TO_READ = parseInt(process.argv[2]) || 4000;
+const BYTES_TO_READ = parseInt(process.argv[2]) || 40000;
 let totalReadedBytes = 0;
 
 console.log("Start to read at " + BYTES_TO_READ + " bytes rate");
@@ -24,7 +24,7 @@ function readLoop() {
 		}
 
 		readLoop();
-	});	
+	});
 }
 
 // On start up, try to read from oneRng device
