@@ -50,7 +50,13 @@ function readAndSendBytes() {
       ) {
         // Start reading again only after sending all the datas
         sendXpData(buffer)
-          .then(() => setTimeout(readAndSendBytes, 100))
+          .then(() => {
+            if (APP_ENV === "dev") {
+              setTimeOut(readAndSendBytes, 100);
+            } else {
+              readAndSendBytes();
+            }
+          })
           .catch(err => console.error(err));
       } else {
         readAndSendBytes();
@@ -121,11 +127,11 @@ wss.on("connection", function connection(ws) {
         ws.close();
         // Send raw datas to chickenrand server
         // uploadRawData(Buffer.concat(xpData), jsonMsg.userXpId)
-        // 	.then(() => ws.close())
-        // 	.catch(err => {
-        // 		console.error(err);
-        // 		ws.close();
-        // 	});
+        //  .then(() => ws.close())
+        //  .catch(err => {
+        //    console.error(err);
+        //    ws.close();
+        //  });
       }
     }
   });
