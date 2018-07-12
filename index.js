@@ -52,7 +52,7 @@ function readAndSendBytes() {
         sendXpData(buffer)
           .then(() => {
             if (APP_ENV === "dev") {
-              setTimeOut(readAndSendBytes, 100);
+              setTimeout(readAndSendBytes, 100);
             } else {
               readAndSendBytes();
             }
