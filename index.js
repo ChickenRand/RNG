@@ -53,8 +53,6 @@ function readAndSendBytes() {
           .then(() => {
             if (APP_ENV === "dev") {
               setTimeout(readAndSendBytes, 100);
-            } else {
-              readAndSendBytes();
             }
           })
           .catch(err => console.error(err));
