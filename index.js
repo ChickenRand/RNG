@@ -54,12 +54,15 @@ function readAndSendBytes() {
             if (APP_ENV === "dev") {
               setTimeout(readAndSendBytes, 100);
             } else {
-              readAndSendBytes();
+              setTimeout(readAndSendBytes, 1);
             }
           })
           .catch(err => console.error(err));
-      } else {
-        readAndSendBytes();
+      } else if (
+        wsConnection !== null &&
+        wsConnection.readyState === WebSocket.OPEN
+      ) {
+        setTimeout(readAndSendBytes, 1);
       }
     });
   } catch (err) {
@@ -78,7 +81,6 @@ fs.open(ONERNG_PATH, "r", function(status, fd) {
   }
   console.log("Connected to the random number generator");
   rngFd = fd;
-  readAndSendBytes();
 });
 
 // inspired from https://stackoverflow.com/a/45178696/947242
@@ -107,7 +109,7 @@ wss.on("connection", function connection(ws) {
   console.log("Client connection.");
   wsConnection = ws;
   xpStarted = false;
-
+  readAndSendBytes();
   // User started the experiment
   ws.on("message", function(msg) {
     if (msg === "start") {
