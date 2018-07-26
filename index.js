@@ -53,6 +53,8 @@ function readAndSendBytes() {
           .then(() => {
             if (APP_ENV === "dev") {
               setTimeout(readAndSendBytes, 100);
+            } else {
+              setTimeout(readAndSendBytes, 1);
             }
           })
           .catch(err => console.error(err));
@@ -60,7 +62,7 @@ function readAndSendBytes() {
         wsConnection !== null &&
         wsConnection.readyState === WebSocket.OPEN
       ) {
-        setTimeout(readAndSendBytes, 100);
+        setTimeout(readAndSendBytes, 1);
       }
     });
   } catch (err) {
