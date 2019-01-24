@@ -115,26 +115,6 @@ wss.on("connection", function connection(ws) {
     if (msg === "start") {
       console.log("Client start XP. Start collecting numbers.");
       xpStarted = true;
-    } else {
-      const jsonMsg = JSON.parse(msg);
-      if (jsonMsg.userXpId > 0) {
-        console.log(
-          "Send raw data for userXp ",
-          jsonMsg.userXpId,
-          "and close connection."
-        );
-        // TEMP CLOSE WS CONNECTION WITHOUT SENDING DATA
-        // OUR FREE HEROKU server can't handle that
-        // DON'T HAVE TIME AND MONEY TO SET UP A DEDICATED SERVER
-        ws.close();
-        // Send raw datas to chickenrand server
-        // uploadRawData(Buffer.concat(xpData), jsonMsg.userXpId)
-        //  .then(() => ws.close())
-        //  .catch(err => {
-        //    console.error(err);
-        //    ws.close();
-        //  });
-      }
     }
   });
 
