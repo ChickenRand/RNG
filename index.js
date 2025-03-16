@@ -1,124 +1,78 @@
 #!/usr/bin/env node
-"use strict";
+import { open } from "node:fs/promises";
+import WebSocket, { WebSocketServer } from "ws";
 
-const fs = require("fs");
-const http = require("http");
-const WebSocket = require("ws");
+import readUntilLengthReach from "./read-until.js";
 
-const readUntilLengthReach = require("./read-until");
-
-const CHICKENRAND_URL = process.env.CHICKENRAND_URL || "localhost";
-const CHICKENRAND_PORT = process.env.CHICKENRAND_PORT || "7000";
-const ONERNG_CHUNK = 4000; // In byte, so 32000 bits per trials
-const ONERNG_PATH = process.env.ONERNG_PATH || "/dev/urandom"; //'/dev/ttyACM0';
-const XP_TRIALS_COUNT = 100;
+const ONERNG_CHUNK = 4000; // In bytes, so 32000 bits per trial
+const ONERNG_PATH = process.env.ONERNG_PATH || "/dev/urandom"; // '/dev/ttyACM0';
 const APP_ENV = process.env.APP_ENV || "dev";
 
 let rngFd = 0;
 let wsConnection = null;
-// We store all the XP data into a buffer array and then send them at the end
 let xpStarted = false;
 
-const wss = new WebSocket.Server({
+const wss = new WebSocketServer({
   port: 8080,
-  // Allow only one connection at a time
-  verifyClient: () => wsConnection === null
+  verifyClient: () => wsConnection === null,
 });
 
-console.log("Server started at localhost:8080 in " + APP_ENV + " environment ");
+console.log(`Server started at localhost:8080 in ${APP_ENV} environment`);
 
-function sendXpData(buffer) {
-  return new Promise((resolve, reject) => {
-    wsConnection.send(buffer, function(err) {
+async function sendXpData(buffer) {
+  if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+    wsConnection.send(buffer, (err) => {
       if (err) {
-        reject(err);
+        console.error("Error sending data:", err);
       }
-      resolve();
     });
-  });
+  }
 }
 
-function readAndSendBytes() {
-  const bytesToRead = ONERNG_CHUNK;
-
+async function readAndSendBytes() {
   try {
-    readUntilLengthReach(rngFd, bytesToRead).then(buffer => {
-      if (
-        wsConnection !== null &&
-        wsConnection.readyState === WebSocket.OPEN &&
-        xpStarted
-      ) {
-        // Start reading again only after sending all the datas
-        sendXpData(buffer)
-          .then(() => {
-            if (APP_ENV === "dev") {
-              setTimeout(readAndSendBytes, 100);
-            } else {
-              setTimeout(readAndSendBytes, 1);
-            }
-          })
-          .catch(err => console.error(err));
-      } else if (
-        wsConnection !== null &&
-        wsConnection.readyState === WebSocket.OPEN
-      ) {
-        setTimeout(readAndSendBytes, 1);
-      }
-    });
-  } catch (err) {
-    console.error(err, typeof err);
-  }
-}
-// On start up, try to read from oneRng device
-fs.open(ONERNG_PATH, "r", function(status, fd) {
-  if (status) {
-    console.error(status.message);
-    if (status.code === "EACCES") {
-      console.error("You should be root to access OneRNG stream.");
-      throw new Error("You should be root to access OneRNG stream.");
+    const buffer = await readUntilLengthReach(rngFd, ONERNG_CHUNK);
+    await sendXpData(buffer);
+
+    if (APP_ENV === "dev") {
+      setTimeout(readAndSendBytes, 100);
+    } else {
+      setTimeout(readAndSendBytes, 1);
     }
-    return;
+  } catch (err) {
+    console.error("Error reading bytes:", err);
+    setTimeout(readAndSendBytes, 1000);
   }
-  console.log("Connected to the random number generator");
-  rngFd = fd;
-});
-
-// inspired from https://stackoverflow.com/a/45178696/947242
-function uploadRawData(dataBuffer, userXpId) {
-  return new Promise((resolve, reject) => {
-    let options = {
-      method: "POST",
-      hostname: CHICKENRAND_URL,
-      port: CHICKENRAND_PORT,
-      path: `/xp/send_raw_data/${userXpId}`,
-      headers: {
-        "Content-Type": "application/octet-stream",
-        "Content-Length": dataBuffer.length
-      }
-    };
-    let data = [];
-    let request = http.request(options);
-    request.on("error", err => reject(err));
-
-    request.write(dataBuffer);
-    request.end(null, null, () => resolve());
-  });
 }
 
-wss.on("connection", function connection(ws) {
+// On startup, try to read from OneRNG device
+open(ONERNG_PATH, "r")
+  .then((fd) => {
+    console.log("Connected to the random number generator");
+    rngFd = fd;
+    readAndSendBytes();
+  })
+  .catch((err) => {
+    console.error("Error opening OneRNG device:", err.message);
+    if (err.code === "EACCES") {
+      console.error("You should be root to access OneRNG stream.");
+    }
+  });
+
+wss.on("connection", (ws) => {
   console.log("Client connection.");
   wsConnection = ws;
   xpStarted = false;
   readAndSendBytes();
-  // User started the experiment
-  ws.on("message", function(msg) {
+
+  ws.on("message", (msg) => {
     if (msg === "start") {
       console.log("Client start XP. Start collecting numbers.");
       xpStarted = true;
     }
   });
 
-  ws.on("close", function() {
+  ws.on("close", () => {
     console.log("Connection closed.");
     wsConnection = null;
   });

@@ -1,11 +1,9 @@
 {
   "name": "chickenrand-rng",
   "version": "1.0.0",
-  "description": "A websocket server that serve random bits",
+  "description": "A websocket server that connect to a OneRNG key and serve random bits",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ChickenRand/RNG.git"
@@ -24,6 +22,6 @@
   },
   "homepage": "https://github.com/ChickenRand/RNG#readme",
   "dependencies": {
-    "ws": "^2.1.0"
+    "ws": "^8.18.1"
   }
 }
