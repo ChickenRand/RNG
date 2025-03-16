@@ -39,7 +39,8 @@ OneRNG package is not updated anymore, I fixed the dependancies and store it in 
 
 ```bash
     # Then on the raspberry
-    sudo dpkg -i onerng_3.6-1_all-bullseye.deb
+    wget https://github.com/OneRNG/onerng.github.io/blob/master/sw/onerng_3.7-1_all.deb?raw=true
+    sudo dpkg -i onerng_3.7-1_all.deb
     # Edit onerng conf to enable avalanche raw mode
     sudo nano /etc/onerng.conf
     # And change
